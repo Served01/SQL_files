@@ -237,13 +237,197 @@ delete emp1;
 
 -- 2022.09.16
 
---1.
-create table t_tbl1
-as select * from emp;
+--1. 사원 테이블과 같은 구조의 t-tbl1 테이블을 생성하고 테이블의 구조를 출력하라.
+create table t_tbll(
+    empno number(4)
+    constraint pk_t_tbll primary key,
+    ename varchar2(10),
+    job varchar2(9),
+    mgr number (4),
+    hiredate date,
+    sal number(7,2),
+    comm number(7,2),
+    deptno number(2)
+);
 
-truncate table t_tbl1;
+select * from t_tbll;
+desc t_tbll;
+drop table t_tbll;
 
-desc t_tbl1;
+--2. t-tbl1 테이블에 부서번호가 20인 데이터를 5명 삽입하라.
+insert into t_tbll
+    select * from emp 
+    where deptno = 20;
+    
+--3. t-tbl1 테이블의 모든 데이터를 검색하라.
+select * from t_tbll;
 
---2.
+--4. 부서번호가 10인 사원들로 이루어져 있는 테이블(t_emp10)을 생성하라.
+create table t_emp10(
+    empno number(4)
+    constraint pk_t_emp10 primary key,
+    ename varchar2(10),
+    job varchar2(9),
+    mgr number (4),
+    hiredate date,
+    sal number(7,2),
+    comm number(7,2),
+    deptno number(2)
+);
+
+select * from t_emp10;
+
+insert into t_emp10
+    select * from emp 
+    where deptno = 10;
+    
+drop table t_emp10;
+    
+--5. t_emp10 테이블에 3명의 데이터를 삽입하고 검색하라.
+insert into t_emp10 values(8100, 'HYUN', 'Program', 7788, to_date('23-06-2022', 'dd-mm-yyyy'), 8000, 3000, 10);
+insert into t_emp10 values(8200, 'HYUN2', 'Program2', 7788, to_date('23-06-2022', 'dd-mm-yyyy'), 6000, 2000, 10);
+insert into t_emp10 values(8300, 'HYUN3', 'Program3', 7788, to_date('23-06-2022', 'dd-mm-yyyy'), 7000, 2500, 10);
+
+select * from t_emp10;
+
+--6. t_tbl1 테이블에 성별(gender) 열을 삽입하라.(데이터 타입은 char(1)로 한다.)
+alter table t_tbll
+    add(t_gender char(1));
+    
+desc t_tbll;
+
+--7. t_tbl1 테이블에 성별열의 구조를 변경(varchar2(10))하고, 확인하라.
+alter table t_tbll
+    modify(t_gender varchar(10));
+
+--8. t-tbl1 테이블에 성별 열을 삭제하라.
+alter table t_tbll drop(t_gender);
+
+--9. t-tbl1 테이블에 모든 데이터를 삭제하고 t-tbl1 테이블에 모든 내용을 검색하라.
+truncate table t_tbll;
+
+select * from t_tbll;
+
+--10. t_emp3 테이블을 생성하되, 기존 t_emp10 의 내용을 사용하여 sal에 NOT NULL 제약조건을 부여하라
+create table t_emp3(
+    empno number(4)
+    constraint pk_t_emp3 primary key,
+    ename varchar2(10),
+    job varchar2(9),
+    mgr number (4),
+    hiredate date,
+    sal number(7,2) not null,
+    comm number(7,2),
+    deptno number(2)
+);
+
+desc t_emp3;
+
+--11. 사원(emp)테이블과 구조가 같은 t_temp2 테이블에 deptno에 외래키  제약조건을 사용하여 생성하라.
+create table t_temp2 (
+    empno number(4)
+    constraint pk_t_emp2 primary key,
+    ename varchar2(10),
+    job varchar2(9),
+    mgr number(4),
+    hiredate date,
+    sal number(7,2) not null,
+    comm number(7,2),
+    deptno number(2),
+    constraint fk_deptno foreign key (deptno) references emp(empno)); 
+
+drop table t_emp2;
+
+--12. t_tbl1 테이블에 대한 제약조건을 검색하라.
+ select * from user_constraints
+    where table_name = 'T_TBL1';
+
+--13. t_temp2 테이블에 외래키 제약조건을 비활성화 하라.
+alter table t_temp2 disable constraints fk_deptno;
+
+--14. t_temp2 테이블에 외래키 제약조건을 다시 활성화 하라.
+alter table t_temp2 enable constraints fk_deptno;
+
+--15.t_temp2 테이블에 외래키 제약조건을 삭제하라. 
+alter table t_temp2 drop constraints fk_deptno;
+
+--16. t_temp2 테이블을 삭제하라.
+drop table t_temp2;
+
+--17. 사원 테이블로부터 20번 부서의 사원들로 이루어져 있는 뷰를 생성하라.(v_emp20)
+--sys/system계정에서 (admin)
+CREATE VIEW v_emp20
+    AS select * 
+        from hyun.emp
+        where deptno = 20;
+  
+    select * from v_emp20;
+
+drop view v_emp20;
+
+--18. 사원번호, 사원이름, 부서이름을 가지는 뷰(v_emp_dept)를 생성하라.
+CREATE VIEW v_emp_dept
+    AS select empno, ename, deptno 
+        from hyun.emp;
+  
+    select * from v_emp_dept;
+
+--19. 부서별 사원 중 가장 최근에 입사한 사원보다 먼저 입사한 사원의 정보를 검색하라.
+select deptno, max(hiredate)
+    from emp
+    group by deptno;
+--30	81/12/03
+--20	87/07/13
+--10	82/01/23
+
+ select deptno, max(hiredate)
+    from emp
+    where hiredate not in(select max(hiredate)
+                             from emp
+                             group by deptno)
+    group by deptno;
+        
+--20. 가장 최근에 입사한 5명의 사원번호, 사원이름, 입사일을 검색하라.
+select empno, ename, max(hiredate)
+    from emp
+    order by hiredate desc;
+    
+--21. 급여와 상여금을 합한 금액으로 상위 7명의 사원번호와 사원이름을 구하라.
+select empno, ename, sal + comm
+    from emp
+    order by 3 desc;
+    
+select empno, ename, sal + comm
+    from (select empno, ename, sal, comm
+            from emp
+            order by 3 desc)
+    where rownum <= 7;
+    
+--22. 부서별 평균 급여가 가장 큰 부서 2개의 부서이름을 구하라.
+select dname, avg(sal)
+    from emp, dept
+    where emp.deptno = dept.deptno
+    group by dname
+    order by 2 desc;
+    
+select dname
+    from (select dname, avg(sal)
+            from emp, dept
+            where emp.deptno = dept.deptno
+            group by dname
+            order by 2 desc)
+    where rownum = 2;
+    
+23. 사원직무별 급여 표준편차가 큰 상위 2개의 사원직무를 구하라.
+select job, stddev(sal)
+    from emp
+    group by job
+    order by 2 desc;
+
+select job 
+    from (select job, stddev(sal)
+            from emp
+           group by job
+           order by 2 desc)
+    where rownum <= 2;
 
